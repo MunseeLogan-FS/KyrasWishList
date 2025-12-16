@@ -16,6 +16,92 @@
 	--shadow: 0 10px 36px rgba(45, 34, 56, 0.12);
 }
 
+/* Christmas Theme */
+body[data-theme='christmas'] {
+	--mint-100: #1e5d3f;
+	--pink-200: #c41e3a;
+	--blue-100: #f4e4c1;
+	--plum-600: #8b0000;
+	--text: #1c3a2a;
+	--muted: rgba(28, 58, 42, 0.72);
+	--accent: #8b0000;
+	--accent-soft: #c41e3a;
+}
+
+body[data-theme='christmas'] {
+	background:
+		repeating-linear-gradient(
+			0deg,
+			transparent,
+			transparent 2px,
+			rgba(0, 0, 0, 0.02) 2px,
+			rgba(0, 0, 0, 0.02) 4px
+		),
+		#1e5d3f !important;
+}
+
+body[data-theme='christmas'] main {
+	background:
+		repeating-linear-gradient(
+			90deg,
+			transparent,
+			transparent 40px,
+			rgba(196, 30, 58, 0.08) 40px,
+			rgba(196, 30, 58, 0.08) 80px
+		),
+		repeating-linear-gradient(
+			0deg,
+			transparent,
+			transparent 40px,
+			rgba(212, 47, 47, 0.06) 40px,
+			rgba(212, 47, 47, 0.06) 80px
+		),
+		#fffef9 !important;
+}
+
+/* Birthday Theme */
+body[data-theme='birthday'] {
+	--mint-100: #ffb6d9;
+	--pink-200: #ff69b4;
+	--blue-100: #b19cd9;
+	--plum-600: #8b4789;
+	--text: #4a2c48;
+	--muted: rgba(74, 44, 72, 0.72);
+	--accent: #8b4789;
+	--accent-soft: #ffb6d9;
+}
+
+body[data-theme='birthday'] {
+	background:
+		repeating-linear-gradient(
+			0deg,
+			transparent,
+			transparent 2px,
+			rgba(0, 0, 0, 0.02) 2px,
+			rgba(0, 0, 0, 0.02) 4px
+		),
+		#ffb6d9 !important;
+}
+
+body[data-theme='birthday'] main {
+	background:
+		repeating-linear-gradient(
+			90deg,
+			transparent,
+			transparent 40px,
+			rgba(255, 105, 180, 0.05) 40px,
+			rgba(255, 105, 180, 0.05) 80px
+		),
+		repeating-linear-gradient(
+			0deg,
+			transparent,
+			transparent 40px,
+			rgba(177, 156, 217, 0.04) 40px,
+			rgba(177, 156, 217, 0.04) 80px
+		),
+		#fffef9 !important;
+}
+
 * {
 	box-sizing: border-box;
 }
