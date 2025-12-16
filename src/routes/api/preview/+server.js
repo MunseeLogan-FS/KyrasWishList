@@ -19,12 +19,19 @@ async function fetchPreview(url) {
 		const html = await res.text();
 		const $ = cheerio.load(html);
 
+		let imageUrl = $('meta[property="og:image"]').attr('content') || null;
+
+		// Upgrade http:// images to https:// to avoid mixed content warnings
+		if (imageUrl && imageUrl.startsWith('http://')) {
+			imageUrl = imageUrl.replace('http://', 'https://');
+		}
+
 		const data = {
 			description:
 				$('meta[property="og:description"]').attr('content') ||
 				$('meta[name="description"]').attr('content') ||
 				'',
-			image: $('meta[property="og:image"]').attr('content') || null,
+			image: imageUrl,
 			site:
 				$('meta[property="og:site_name"]').attr('content') ||
 				new URL(url).hostname.replace('www.', '')
