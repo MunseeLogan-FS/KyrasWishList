@@ -63,6 +63,7 @@
 
 		<input
 			class="search"
+			name="search"
 			placeholder="Search items…"
 			bind:value={query}
 			aria-label="Search wishlist"
