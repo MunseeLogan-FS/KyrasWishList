@@ -69,7 +69,10 @@ export async function load({ fetch }) {
 			if (isUrl(text)) {
 				items.push({
 					title: currentTitle || new URL(text).hostname.replace('www.', ''),
-					url: text
+					url: text,
+					site: new URL(text).hostname.replace('www.', ''),
+					description: null,
+					image: null
 				});
 			} else {
 				// Non-URL text BEFORE a URL is ALWAYS a title
@@ -77,22 +80,9 @@ export async function load({ fetch }) {
 			}
 		}
 
-		const previews = await Promise.all(
-			items.map(async (item) => {
-				const preview = await fetchPreview(item.url);
-
-				return {
-					title: item.title, // ← SOURCE OF TRUTH
-					url: item.url,
-					site: preview.site,
-					description: preview.description,
-					image: preview.image
-				};
-			})
-		);
-
+		// Return immediately without waiting for previews
 		return {
-			items: previews,
+			items,
 			updated: parsed.updated
 		};
 	} catch (err) {

@@ -1,9 +1,11 @@
 <script>
+	import { onMount } from 'svelte';
+
 	export let data;
 
 	let query = '';
+	let items = data?.items ?? [];
 
-	$: items = data?.items ?? [];
 	$: filtered = items.filter((i) =>
 		(i.title + ' ' + i.url).toLowerCase().includes(query.trim().toLowerCase())
 	);
@@ -15,6 +17,32 @@
 			return '';
 		}
 	};
+
+	// Fetch previews progressively after mount
+	onMount(async () => {
+		const urlsToFetch = items.filter((item) => !item.image && !item.description);
+
+		for (const item of urlsToFetch) {
+			try {
+				const res = await fetch(`/api/preview?url=${encodeURIComponent(item.url)}`);
+				const preview = await res.json();
+
+				// Update the item in place
+				const index = items.findIndex((i) => i.url === item.url);
+				if (index !== -1) {
+					items[index] = {
+						...items[index],
+						description: preview.description,
+						image: preview.image,
+						site: preview.site
+					};
+					items = items; // Trigger reactivity
+				}
+			} catch (err) {
+				console.error(`Failed to fetch preview for ${item.url}`, err);
+			}
+		}
+	});
 </script>
 
 <svelte:head>
