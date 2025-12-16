@@ -87,19 +87,21 @@ body[data-theme='birthday'] {
 
 body[data-theme='birthday'] main {
 	background:
+		url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 24 24'%3E%3Cg fill='%238b4789' fill-opacity='0.06'%3E%3Crect x='4' y='11' width='16' height='7' rx='2'/%3E%3Crect x='7' y='7' width='2' height='4' rx='1'/%3E%3Crect x='11' y='6' width='2' height='5' rx='1'/%3E%3Crect x='15' y='8' width='2' height='3' rx='1'/%3E%3Cpath d='M4 11c2-2 3 0 5 0s3-2 5 0 3-2 6 0H4z'/%3E%3C/g%3E%3C/svg%3E")
+			0 0 / 48px 48px repeat,
 		repeating-linear-gradient(
 			90deg,
 			transparent,
 			transparent 40px,
-			rgba(255, 105, 180, 0.05) 40px,
-			rgba(255, 105, 180, 0.05) 80px
+			rgba(255, 105, 180, 0.04) 40px,
+			rgba(255, 105, 180, 0.04) 80px
 		),
 		repeating-linear-gradient(
 			0deg,
 			transparent,
 			transparent 40px,
-			rgba(177, 156, 217, 0.04) 40px,
-			rgba(177, 156, 217, 0.04) 80px
+			rgba(177, 156, 217, 0.035) 40px,
+			rgba(177, 156, 217, 0.035) 80px
 		),
 		#fffef9 !important;
 }
