@@ -1,82 +1,102 @@
-// src/routes/+page.server.js
 import { error } from '@sveltejs/kit';
+import * as cheerio from 'cheerio';
 
 const WISHLIST_URL =
 	'https://script.google.com/macros/s/AKfycbyh46WN7WBsK9QuSTVNl_8ukrdQ7kipokUZhu-gbh6vhJviYhmomJrZjNYzq3f3x1pl/exec';
 
-const isUrl = (s) => /^https?:\/\/\S+/i.test(s.trim());
+/* ---------------- Preview helper ---------------- */
 
-function toItems(content = []) {
-	const items = [];
-	let currentTitle = null;
+const PREVIEW_CACHE = new Map();
+const CACHE_TTL = 1000 * 60 * 30; // 30 minutes
 
-	for (const block of content) {
-		const text = (block?.text ?? '').trim();
-		if (!text) continue;
-
-		if (isUrl(text)) {
-			// if we have a title, pair it; otherwise derive a fallback title
-			let title = currentTitle;
-			if (!title) {
-				try {
-					title = new URL(text).hostname.replace(/^www\./, '');
-				} catch {
-					title = 'Link';
-				}
-			}
-
-			items.push({
-				title,
-				url: text
-			});
-
-			// IMPORTANT: do NOT clear currentTitle here,
-			// because your doc has cases like "Cotton Sweaters" followed by multiple links
-			continue;
-		}
-
-		// Non-url paragraph becomes the "current title"
-		currentTitle = text;
+async function fetchPreview(url) {
+	const cached = PREVIEW_CACHE.get(url);
+	if (cached && Date.now() - cached.time < CACHE_TTL) {
+		return cached.data;
 	}
 
-	return items;
+	try {
+		const res = await fetch(url, {
+			headers: { 'User-Agent': 'KyraWishlistBot/1.0' }
+		});
+
+		const html = await res.text();
+		const $ = cheerio.load(html);
+
+		const data = {
+			url,
+			description:
+				$('meta[property="og:description"]').attr('content') ||
+				$('meta[name="description"]').attr('content') ||
+				'',
+			image: $('meta[property="og:image"]').attr('content') || null,
+			site:
+				$('meta[property="og:site_name"]').attr('content') ||
+				new URL(url).hostname.replace('www.', '')
+		};
+
+		PREVIEW_CACHE.set(url, { time: Date.now(), data });
+		return data;
+	} catch {
+		return {
+			url,
+			description: '',
+			image: null,
+			site: new URL(url).hostname.replace('www.', '')
+		};
+	}
 }
+
+/* ---------------- Wishlist parsing ---------------- */
+
+const isUrl = (s) => /^https?:\/\/\S+/i.test(s.trim());
 
 export async function load({ fetch }) {
 	try {
 		const res = await fetch(WISHLIST_URL);
 		const body = await res.text();
-
-		let parsed;
-		try {
-			parsed = JSON.parse(body);
-		} catch (parseErr) {
-			console.error('Wishlist API returned non-JSON response', {
-				status: res.status,
-				contentType: res.headers.get('content-type') ?? '',
-				bodySnippet: body.slice(0, 200)
-			});
-			throw error(502, 'Wishlist source returned an invalid response');
-		}
-
-		if (!res.ok) {
-			throw error(res.status, parsed?.message ?? 'Failed to fetch wishlist');
-		}
+		const parsed = JSON.parse(body);
 
 		const content = parsed?.content ?? [];
-		const items = toItems(content);
+
+		const items = [];
+		let currentTitle = null;
+
+		for (const block of content) {
+			const text = block.text?.trim();
+			if (!text) continue;
+
+			if (isUrl(text)) {
+				items.push({
+					title: currentTitle || new URL(text).hostname.replace('www.', ''),
+					url: text
+				});
+			} else {
+				// Non-URL text BEFORE a URL is ALWAYS a title
+				currentTitle = text;
+			}
+		}
+
+		const previews = await Promise.all(
+			items.map(async (item) => {
+				const preview = await fetchPreview(item.url);
+
+				return {
+					title: item.title, // ← SOURCE OF TRUTH
+					url: item.url,
+					site: preview.site,
+					description: preview.description,
+					image: preview.image
+				};
+			})
+		);
 
 		return {
-			items,
-			updated: parsed?.updated ?? null,
-			error: null
+			items: previews,
+			updated: parsed.updated
 		};
 	} catch (err) {
-		console.error('Failed to load wishlist', err);
-		return {
-			items: [],
-			updated: null,
-			error: 'Unable to fetch wishlist right now.'
-		};
+		console.error(err);
+		throw error(500, 'Failed to load wishlist');
 	}
 }
